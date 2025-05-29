@@ -1,0 +1,1 @@
+<x-heroicon-s-sparkles />
