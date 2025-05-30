@@ -15,7 +15,11 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('product_id')->constrained()->onDelete('restrict');
+            $table->integer('quantity')->default(1); // Quantity of the product in the order
             $table->string('status')->default('pending'); // e.g., pending = to ship, receive = to receive, completed, cancelled
+            $table->decimal('total_price', 10, 2)->default(0.00); // Total price of the order
+            $table->string('shipping_address')->nullable(); // Optional shipping address
+            $table->string('shipping_method')->nullable(); // Optional shipping method
             $table->timestamps();
         });
     }

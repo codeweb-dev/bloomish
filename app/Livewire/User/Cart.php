@@ -7,6 +7,7 @@ use Livewire\Component;
 use Livewire\Attributes\Title;
 use App\Models\Cart as CartModel;
 use Masmerise\Toaster\Toaster;
+use Flux\Flux;
 
 #[Title('Cart')]
 class Cart extends Component
@@ -44,6 +45,52 @@ class Cart extends Component
         $user = Auth::user();
 
         return $user->region && $user->province && $user->city && $user->brgy && $user->street_address;
+    }
+
+    public function checkout()
+    {
+        if (!$this->getHasAddressProperty()) {
+            Flux::modal('confirm-checkout')->close();
+            Toaster::error('Please complete your address before checking out.');
+            return;
+        }
+
+        $carts = $this->getCartData();
+
+        if ($carts->isEmpty()) {
+            Flux::modal('confirm-checkout')->close();
+            Toaster::error('Your cart is empty.');
+            return;
+        }
+
+        $orderIds = [];
+        foreach ($carts as $cart) {
+            $product = $cart->product;
+
+            if ($product->stock < $cart->quantity) {
+                Flux::modal('confirm-checkout')->close();
+                Toaster::error("Product {$product->name} does not have enough stock.");
+                return;
+            }
+
+            $product->decrement('stock', $cart->quantity);
+
+            $order = $product->orders()->create([
+                'user_id' => Auth::id(),
+                'status' => 'pending',
+                'total_price' => $product->price * $cart->quantity,
+                'quantity' => $cart->quantity,
+                'shipping_address' => Auth::user()->getFullAddress(),
+                'shipping_method' => $this->payment,
+            ]);
+
+            $orderIds[] = $order->id;
+
+            $cart->delete();
+        }
+
+        Flux::modal('confirm-checkout')->close();
+        return redirect()->route('receipt', ['orderIds' => implode(',', $orderIds)]);
     }
 
     public function increment($cartId)

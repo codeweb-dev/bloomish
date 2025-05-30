@@ -105,7 +105,9 @@
                     <div class="flex">
                         <flux:spacer />
 
-                        <flux:button type="submit" variant="primary">Confirm</flux:button>
+                        <flux:button variant="primary" class="w-full" wire:click="checkout">
+                            Confirm
+                        </flux:button>
                     </div>
                 </div>
             </flux:modal>

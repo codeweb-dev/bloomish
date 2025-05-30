@@ -66,6 +66,18 @@ class User extends Authenticatable
             ->implode('');
     }
 
+    public function getFullAddress(): string
+    {
+        return collect([
+            $this->street_address,
+            $this->brgy,
+            $this->city,
+            $this->province,
+            $this->region,
+            $this->postal_code,
+        ])->filter()->implode(', ');
+    }
+
     public function favorites()
     {
         return $this->hasMany(Favorite::class);
@@ -84,5 +96,10 @@ class User extends Authenticatable
     public function cartProducts()
     {
         return $this->belongsToMany(Cart::class, 'carts');
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
     }
 }
